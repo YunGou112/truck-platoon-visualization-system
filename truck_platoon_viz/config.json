@@ -1,0 +1,16 @@
+{
+  "label": {
+    "width": 120,
+    "height": 60,
+    "padding": 10,
+    "background_color": [0, 0, 0, 217],
+    "border_radius": 3
+  },
+  "leader_line": {
+    "width": 2,
+    "color": [255, 255, 255, 128]
+  },
+  "position": {
+    "candidate_priorities": ["top_right", "bottom_right", "top_left", "bottom_left", "top", "bottom", "left", "right"]
+  }
+}

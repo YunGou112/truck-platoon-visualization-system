@@ -1,0 +1,7 @@
+{
+    "python.defaultInterpreterPath": "D:\\anaconda3\\envs\\zhuxiyang\\python.exe",
+    "python.analysis.autoSearchPaths": true,
+    "python.analysis.extraPaths": [
+        "D:\\朱希阳(本科生)"
+    ]
+}

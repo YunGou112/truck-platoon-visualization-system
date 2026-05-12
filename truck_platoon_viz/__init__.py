@@ -1,0 +1,1 @@
+"""Truck platoon visualization package."""

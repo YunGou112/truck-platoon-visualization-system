@@ -1,0 +1,2 @@
+timestamp_str,truck_id,warning_type,warning_text,speed_kmh,acceleration_mps2
+2025-09-26 10:52:04,1879347316192227300,1,车距过近,23.0,0.0
