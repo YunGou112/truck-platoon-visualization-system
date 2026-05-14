@@ -1,3 +1,4 @@
-pygame
-pandas
-PyQt5
+pandas>=2.0
+pygame>=2.6
+PyQt5>=5.15
+matplotlib>=3.7
