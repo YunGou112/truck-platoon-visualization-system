@@ -100,7 +100,6 @@ python truck_platoon_viz/main.py "platoon_results/9mins_4trucks"
 - `Space`：播放 / 暂停
 - `Up / Down / Left / Right / + / -`：调整播放速度
 - `R`：重置播放状态
-- `A / D`：切换编队
 - 鼠标滚轮：缩放或滚动预警列表
 - 鼠标左键拖动：平移主视图
 - 点击车辆：选中车辆并联动侧边信息
