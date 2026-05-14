@@ -1,4 +1,5 @@
 import os
+import logging
 import pandas as pd
 import colorsys
 from config import PlatoonConfig
@@ -7,6 +8,9 @@ try:
     from .models import Truck
 except ImportError:
     from models import Truck
+
+
+logger = logging.getLogger(__name__)
 
 
 class DataProcessor:
@@ -41,10 +45,10 @@ class DataProcessor:
         df = pd.read_csv(csv_path)
 
         if df.empty:
-            print(f"警告：文件 {csv_path} 为空。")
+            logger.warning("文件为空: %s", csv_path)
             return
 
-        print(f"检测到 CSV 列名: {df.columns.tolist()}")
+        logger.info("检测到 CSV 列名: %s", df.columns.tolist())
 
         # 1. 处理时间列
         if 'timestamp_str' not in df.columns:
@@ -54,7 +58,7 @@ class DataProcessor:
 
         self.min_time = df['timestamp'].min()
         self.max_time = df['timestamp'].max()
-        print(f"数据时间范围: {self.min_time} -> {self.max_time}")
+        logger.info("数据时间范围: %s -> %s", self.min_time, self.max_time)
 
         # 2. 【关键修正】处理坐标列
         # 优先使用 WGS84 (标准GPS)，如果没有则尝试 GCJ02 或 BD09
@@ -69,7 +73,7 @@ class DataProcessor:
             if src_col in df.columns and target_col not in df.columns:
                 # 将原始列重命名为标准的 'lon' 或 'lat'
                 df.rename(columns={src_col: target_col}, inplace=True)
-                print(f"已将 '{src_col}' 映射为 '{target_col}'")
+                logger.info("已将 '%s' 映射为 '%s'", src_col, target_col)
                 renamed = True
                 # 找到一对就停止，避免覆盖
                 if 'lon' in df.columns and 'lat' in df.columns:
@@ -93,10 +97,10 @@ class DataProcessor:
                 break
 
         if id_col is None:
-            print("错误：未识别车辆 ID 列！")
+            logger.error("未识别车辆 ID 列。")
             return
 
-        print(f"使用 '{id_col}' 列作为车辆 ID。")
+        logger.info("使用 '%s' 列作为车辆 ID。", id_col)
 
         # 5. 按车辆 ID 分组数据，并按数量动态分配区分色
         grouped_items = list(df.groupby(id_col))
@@ -112,7 +116,7 @@ class DataProcessor:
             truck.base_color = self._generate_distinct_color(idx, total_trucks)
             truck.color = truck.base_color
 
-        print(f"成功加载 {len(self.trucks)} 辆卡车的数据。")
+        logger.info("成功加载 %s 辆卡车的数据。", len(self.trucks))
 
     def _generate_distinct_color(self, index, total):
         """根据车辆数量动态生成区分度较高的颜色。"""
@@ -125,7 +129,7 @@ class DataProcessor:
 
     def _load_all_platoons(self, platoon_results_path):
         """加载platoon_results目录下的所有编队数据"""
-        print(f"正在加载 platoon_results 目录: {platoon_results_path}")
+        logger.info("正在加载 platoon_results 目录: %s", platoon_results_path)
         
         # 遍历所有子文件夹
         for root, dirs, files in os.walk(platoon_results_path):
@@ -133,15 +137,15 @@ class DataProcessor:
             if root == platoon_results_path:
                 for dir_name in dirs:
                     platoon_folder = os.path.join(root, dir_name)
-                    print(f"\n处理编队: {dir_name}")
+                    logger.info("处理编队: %s", dir_name)
                     
                     try:
                         # 为每个编队创建一个数据处理器
                         platoon_processor = DataProcessor(platoon_folder)
                         self.all_platoons[dir_name] = platoon_processor
-                        print(f"成功加载编队: {dir_name}，包含 {len(platoon_processor.trucks)} 辆卡车")
+                        logger.info("成功加载编队: %s，包含 %s 辆卡车", dir_name, len(platoon_processor.trucks))
                     except Exception as e:
-                        print(f"加载编队 {dir_name} 失败: {e}")
+                        logger.exception("加载编队 %s 失败: %s", dir_name, e)
         
         # 设置默认当前编队
         if self.all_platoons:
@@ -157,9 +161,9 @@ class DataProcessor:
             self.max_lat = first_processor.max_lat
             # 使用第一个编队的卡车数据
             self.trucks = first_processor.trucks
-            print(f"默认选择编队: {first_platoon}")
+            logger.info("默认选择编队: %s", first_platoon)
         else:
-            print("警告：platoon_results 目录中没有找到有效的编队数据")
+            logger.warning("platoon_results 目录中没有找到有效的编队数据。")
 
     def geo_to_screen(self, lon, lat, width, height, zoom=1.0, offset_x=0, offset_y=0):
         """将经纬度转换为屏幕坐标"""
@@ -191,10 +195,10 @@ class DataProcessor:
             self.min_lat = platoon_processor.min_lat
             self.max_lat = platoon_processor.max_lat
             self.trucks = platoon_processor.trucks
-            print(f"已切换到编队: {platoon_name}")
+            logger.info("已切换到编队: %s", platoon_name)
             return True
         else:
-            print(f"编队 {platoon_name} 不存在")
+            logger.warning("编队不存在: %s", platoon_name)
             return False
 
     def get_available_platoons(self):

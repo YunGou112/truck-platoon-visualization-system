@@ -173,11 +173,23 @@ def render_frame(viz, processor):
     viz._draw_compact_labels(visible_trucks)
 
     vehicle_tiles = []
-    for idx, truck in enumerate(ordered_trucks):
+    ordered_for_tiles = list(ordered_trucks)
+    if viz.selected_truck_id is not None:
+        ordered_for_tiles.sort(key=lambda truck: (str(truck.id) != str(viz.selected_truck_id),))
+
+    for idx, truck in enumerate(ordered_for_tiles):
+        front_truck = None
+        if truck in ordered_trucks:
+            original_idx = ordered_trucks.index(truck)
+            if original_idx > 0:
+                front_truck = ordered_trucks[original_idx - 1]
         gap_m = None if idx == 0 else ordered_neighbor_distance.get(truck.id)
+        if front_truck is not None:
+            gap_m = ordered_neighbor_distance.get(truck.id)
         vehicle_tiles.append({
             "truck_id": truck.id,
             "warning": bool(truck.warning),
+            "selected": str(truck.id) == str(viz.selected_truck_id),
             "speed_kmh": float(truck.get_speed() or 0.0),
             "gap_m": None if gap_m in (None, float("inf")) else float(gap_m),
             "drive_time_s": truck.get_driving_time_seconds() if hasattr(truck, "get_driving_time_seconds") else None,
@@ -197,6 +209,8 @@ def render_frame(viz, processor):
         start_x=sidebar_w,
         bottom_padding=reserved_bottom,
     )
+    viz.ui_elements_system.selected_truck_id = viz.selected_truck_id
+    viz.ui_elements_system._active_warning_event_key = viz._active_warning_event_key
 
     sidebar_bottom_y = viz.height - reserved_bottom
     platoon_name = getattr(processor, "current_platoon", "") or ""
@@ -234,9 +248,9 @@ def render_frame(viz, processor):
                 "warning_text": getattr(sel, "warning_text", "") if getattr(sel, "warning", 0) else "",
             }
 
-    try:
-        total_dur_s = (processor.max_time - processor.min_time).total_seconds() if processor.min_time and processor.max_time else None
-    except Exception:
+    if processor.min_time and processor.max_time:
+        total_dur_s = (processor.max_time - processor.min_time).total_seconds()
+    else:
         total_dur_s = None
 
     sidebar_data = {
@@ -258,6 +272,7 @@ def render_frame(viz, processor):
             "Space 播放/暂停",
             "↑↓ 整数调速",
             "←→ 快退/快进(5s)",
+            "N/P 预警跳转",
             "R 重置时间/视图",
             "X 取消选中车辆",
             "C 开关配置面板",
@@ -265,6 +280,7 @@ def render_frame(viz, processor):
             "F 导出所有编队数据",
             "拖动底部进度条 跳转",
             "点击车辆/预警事件 选中车辆",
+            "点击预警面板按钮 筛选/排序",
             "滚轮 缩放 | 左键拖拽 平移",
         ],
     }
@@ -284,8 +300,10 @@ def render_frame(viz, processor):
         viz.show_config, viz.config
     )
 
+    visible_warning_events = viz._get_warning_feed_events()
+    viz.ui_elements_system.warning_feed_state = viz._get_warning_feed_summary()
     rect = viz.ui_elements_system.draw_warning_feed(
-        viz.screen, viz.width, viz.height, viz.anomaly_events, viz._warning_feed_scroll_px
+        viz.screen, viz.width, viz.height, visible_warning_events, viz._warning_feed_scroll_px
     )
     if rect is not None:
         viz._warning_feed_rect = rect

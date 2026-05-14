@@ -1,6 +1,10 @@
 import os
+import logging
 
 import pandas as pd
+
+
+logger = logging.getLogger(__name__)
 
 
 def export_data(viz, processor):
@@ -21,7 +25,7 @@ def export_data(viz, processor):
         filename = f"export_{processor.current_platoon}_{viz.current_sim_time.strftime('%Y%m%d_%H%M%S')}.csv"
         filepath = os.path.join(export_dir, filename)
         df.to_csv(filepath, index=False, encoding='utf-8')
-        print(f"数据已导出到: {filepath}")
+        logger.info("数据已导出到: %s", filepath)
 
         try:
             active_trucks = [t for t in processor.trucks.values() if t.current_pos_data]
@@ -39,18 +43,18 @@ def export_data(viz, processor):
             kpi_filename = f"kpi_snapshot_{processor.current_platoon}_{viz.current_sim_time.strftime('%Y%m%d_%H%M%S')}.csv"
             kpi_path = os.path.join(export_dir, kpi_filename)
             kpi_df.to_csv(kpi_path, index=False, encoding="utf-8")
-            print(f"KPI快照已导出到: {kpi_path}")
+            logger.info("KPI快照已导出到: %s", kpi_path)
         except Exception:
-            pass
+            logger.debug("导出 KPI 快照失败。", exc_info=True)
 
         if viz.anomaly_events:
             event_filename = f"warnings_{processor.current_platoon}_{viz.current_sim_time.strftime('%Y%m%d_%H%M%S')}.csv"
             event_path = os.path.join(export_dir, event_filename)
             event_df = pd.DataFrame(viz.anomaly_events)
             event_df.to_csv(event_path, index=False, encoding='utf-8')
-            print(f"预警事件已导出到: {event_path}")
+            logger.info("预警事件已导出到: %s", event_path)
     else:
-        print("没有数据可导出")
+        logger.warning("没有数据可导出。")
 
 
 def export_all_data(viz, processor):
@@ -71,7 +75,7 @@ def export_all_data(viz, processor):
                 filename = f"export_{platoon_name}.csv"
                 filepath = os.path.join(export_dir, filename)
                 df.to_csv(filepath, index=False, encoding='utf-8')
-                print(f"编队 {platoon_name} 数据已导出到: {filepath}")
-        print("所有编队数据导出完成")
+                logger.info("编队 %s 数据已导出到: %s", platoon_name, filepath)
+        logger.info("所有编队数据导出完成。")
     else:
-        print("没有找到编队数据")
+        logger.warning("没有找到编队数据。")

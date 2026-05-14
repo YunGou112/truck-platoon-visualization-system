@@ -62,13 +62,15 @@ python truck_platoon_viz/main.py "platoon_results/9mins_4trucks"
 状态面板会显示最新预警文本，车辆异常时显示红色。
 按 `E` 导出当前数据时，会同时导出异常事件 CSV（如果有预警事件）。
 
-## 6. 项目整合后的目录建议
+## 6. 当前工程目录
 
-- `truck_platoon_viz/`：主程序（可视化核心）
-- `platoon_results/`：输入数据（可选，多组）
-- `tools/`：开发工具脚本
-  - `tools/smoke_test.py`：合并后的环境冒烟测试
-  - `tools/data_pipeline.py`：统一数据处理入口
+- `truck_platoon_viz/`：可视化主程序
+- `platoon_results/`：样例编队数据
+- `tools/data/`：数据预处理与统计脚本
+- `tools/data_pipeline.py`：统一数据处理入口
+- `tools/plots/`：工程辅助绘图脚本
+- `tools/smoke_test.py`：环境冒烟测试
+- `tests/`：自动化测试
 - `requirements.txt`：依赖清单
 - `config.py`：全局阈值和参数
 
@@ -88,24 +90,13 @@ pip install -r requirements.txt
 python truck_platoon_viz/run_launcher.py
 ```
 
-## 8. 哪些文件可以删除（按用途）
+## 8. 工程说明
 
-如果你只关心运行可视化，这些可以删除：
+当前仓库只保留工程相关内容：
 
-- `tools/`（仅开发和数据处理时需要）
-- `test_pygame.py`
-- `test_visualizer.py`
-- `_thesis_extracted.txt`
-- `.idea/`
-- `.trae/`
-- `truck_platoon_viz/.trae/`
-- `truck_platoon_viz/docs/`
-- `truck_platoon_viz/exports/`（历史导出结果）
-- `truck_platoon_viz/venv/`（跨电脑不建议拷贝虚拟环境）
+- 可视化主程序与启动器
+- 数据预处理与指标计算脚本
+- 工程测试与冒烟验证脚本
+- 样例数据与运行资源
 
-如果你还要做数据预处理，请保留：
-
-- `preprocess_split.py`
-- `platoon_analyzer.py`
-- `calculate_platoon_metrics.py`
-- 或直接使用 `tools/data_pipeline.py` 作为统一入口
+PPT、答辩排版、演示稿生成等非工程内容已从当前工程树中移除。

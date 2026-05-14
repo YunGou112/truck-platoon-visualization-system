@@ -132,6 +132,7 @@ class LauncherWindow(QMainWindow):
 
         self.selected_folder = None
         self._last_logo_px = 0
+        self._hero_meta_label = None
         self._init_ui()
 
     def keyPressEvent(self, event):
@@ -197,6 +198,11 @@ class LauncherWindow(QMainWindow):
                 f"font-size: {hint_px}px; color: #9eb4c4;"
                 "padding: 2px 0 2px 8px;"
             )
+        if self._hero_meta_label is not None:
+            hero_meta_px = max(12, min(15, int(w * 0.017)))
+            self._hero_meta_label.setStyleSheet(
+                f"font-size: {hero_meta_px}px; color: #95a7c0;"
+            )
 
     def _init_ui(self):
         # 使用渐变背景容器
@@ -209,16 +215,23 @@ class LauncherWindow(QMainWindow):
         root.setSpacing(0)
 
         # 细线（顶部分隔）
-        line1 = QLabel()
+        line1 = QFrame()
+        line1.setObjectName("headerRule")
         line1.setFixedHeight(1)
-        line1.setStyleSheet(
-            "background: rgba(0, 198, 255, 0.22);"
-            "margin: 0 8px;"
-        )
         root.addWidget(line1)
         root.addSpacing(14)
 
-        # ── 标题区（居中） ──
+        hero = QFrame()
+        hero.setObjectName("heroPanel")
+        hero_layout = QVBoxLayout(hero)
+        hero_layout.setContentsMargins(22, 18, 22, 18)
+        hero_layout.setSpacing(10)
+
+        eyebrow = QLabel("TRUCK PLATOON TOOL")
+        eyebrow.setObjectName("heroEyebrow")
+        eyebrow.setAlignment(Qt.AlignCenter)
+        hero_layout.addWidget(eyebrow)
+
         self._title_cn = QLabel("数据驱动的卡车队列可视化系统")
         self._title_cn.setAlignment(Qt.AlignCenter)
         self._title_cn.setWordWrap(True)
@@ -228,7 +241,7 @@ class LauncherWindow(QMainWindow):
             "padding: 4px 0;"
             "letter-spacing: 1px;"
         )
-        root.addWidget(self._title_cn)
+        hero_layout.addWidget(self._title_cn)
 
         self._title_en = QLabel(
             "Data-Driven Truck Platooning Visualization System"
@@ -240,7 +253,25 @@ class LauncherWindow(QMainWindow):
             "padding: 0 0 4px 0;"
             "letter-spacing: 0.5px;"
         )
-        root.addWidget(self._title_en)
+        hero_layout.addWidget(self._title_en)
+
+        self._hero_meta_label = QLabel("选择编队数据后启动，Pygame 可视化窗口将独立弹出。")
+        self._hero_meta_label.setObjectName("heroMeta")
+        self._hero_meta_label.setAlignment(Qt.AlignCenter)
+        self._hero_meta_label.setWordWrap(True)
+        hero_layout.addWidget(self._hero_meta_label)
+
+        chip_row = QHBoxLayout()
+        chip_row.setSpacing(10)
+        chip_row.addStretch(1)
+        for text in ("深色监控台", "本地数据启动", "独立可视化窗口"):
+            chip = QLabel(text)
+            chip.setObjectName("statChip")
+            chip_row.addWidget(chip)
+        chip_row.addStretch(1)
+        hero_layout.addLayout(chip_row)
+
+        root.addWidget(hero)
         root.addSpacing(16)
 
         # ── 中间可滚动区：数据源 + 启动 ──
@@ -251,29 +282,6 @@ class LauncherWindow(QMainWindow):
         scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         scroll.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         scroll.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        scroll.setStyleSheet("""
-            QScrollArea#launcherScroll {
-                background: transparent;
-                border: none;
-            }
-            QScrollBar:vertical {
-                width: 10px;
-                background: rgba(0, 0, 0, 0.2);
-                border-radius: 5px;
-                margin: 2px;
-            }
-            QScrollBar::handle:vertical {
-                background: rgba(0, 198, 255, 0.35);
-                border-radius: 5px;
-                min-height: 28px;
-            }
-            QScrollBar::handle:vertical:hover {
-                background: rgba(0, 198, 255, 0.55);
-            }
-            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
-                height: 0;
-            }
-        """)
 
         mid = QWidget()
         mid.setObjectName("launcherMid")
@@ -292,9 +300,11 @@ class LauncherWindow(QMainWindow):
         card_layout.setSpacing(14)
         card_layout.setContentsMargins(18, 18, 18, 20)
 
-        title_ds = QLabel("\U0001f4c1  选择数据源")
+        title_ds = QLabel("选择数据源")
         title_ds.setObjectName("dataSourceCardTitle")
         title_ds.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        subtitle_ds = QLabel("选择包含 `platoon_data.csv` 的编队数据文件夹。")
+        subtitle_ds.setStyleSheet("color: #92a2b8; font-size: 13px; padding: 0 0 2px 0;")
 
         # 路径独占一行全宽，按钮下一行右对齐，避免窄窗口横向挤压遮挡
         path_col = QVBoxLayout()
@@ -306,13 +316,13 @@ class LauncherWindow(QMainWindow):
         self.lbl_path.setMinimumHeight(72)
         self.lbl_path.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.lbl_path.setStyleSheet(
-            "color: #ff6b6b; font-size: 13px; padding: 10px 14px;"
-            "background: rgba(0, 0, 0, 0.58);"
-            "border: 1px solid rgba(0, 198, 255, 0.22);"
+            "color: #98a7bb; font-size: 13px; padding: 10px 14px;"
+            "background: rgba(10, 14, 22, 0.9);"
+            "border: 1px solid rgba(88, 102, 126, 0.42);"
             "border-radius: 8px;"
         )
 
-        btn_browse = QPushButton("\U0001f4c1  浏览文件夹")
+        btn_browse = QPushButton("浏览文件夹")
         btn_browse.setObjectName("btnBrowse")
         btn_browse.setCursor(Qt.PointingHandCursor)
         btn_browse.setMinimumWidth(140)
@@ -325,12 +335,13 @@ class LauncherWindow(QMainWindow):
         btn_row.addWidget(btn_browse)
         path_col.addLayout(btn_row)
         card_layout.addWidget(title_ds)
+        card_layout.addWidget(subtitle_ds)
         card_layout.addLayout(path_col)
 
         mid_layout.addWidget(card)
         mid_layout.addSpacing(18)
 
-        self.btn_launch = QPushButton("▶  启动可视化系统")
+        self.btn_launch = QPushButton("启动可视化系统")
         self.btn_launch.setObjectName("btnLaunch")
         self.btn_launch.setEnabled(False)
         self.btn_launch.setMinimumHeight(52)
@@ -395,6 +406,10 @@ class LauncherWindow(QMainWindow):
         right_v.setSpacing(5)
         right_v.setAlignment(Qt.AlignRight | Qt.AlignBottom)
 
+        hint_title = QLabel("操作提示")
+        hint_title.setStyleSheet("color: #e7edf8; font-size: 13px; font-weight: 600;")
+        right_v.addWidget(hint_title, 0, Qt.AlignRight)
+
         self._hints_label = QLabel(
             "Pygame 独立弹窗\n"
             "Space 暂停 · 滚轮缩放\n"
@@ -421,9 +436,9 @@ class LauncherWindow(QMainWindow):
             self.selected_folder = folder
             self.lbl_path.setText(f"已选择：{folder}")
             self.lbl_path.setStyleSheet(
-                "color: #5dffb8; font-size: 13px; padding: 10px 14px;"
-                "background: rgba(0, 0, 0, 0.62);"
-                "border: 1px solid rgba(0, 255, 150, 0.38);"
+                "color: #dbe7f5; font-size: 13px; padding: 10px 14px;"
+                "background: rgba(14, 22, 30, 0.95);"
+                "border: 1px solid rgba(179, 148, 86, 0.56);"
                 "border-radius: 8px;"
             )
             self.btn_launch.setEnabled(True)
@@ -431,9 +446,9 @@ class LauncherWindow(QMainWindow):
             self.selected_folder = None
             self.lbl_path.setText("当前路径：未选择")
             self.lbl_path.setStyleSheet(
-                "color: #ff6b6b; font-size: 13px; padding: 10px 14px;"
-                "background: rgba(0, 0, 0, 0.58);"
-                "border: 1px solid rgba(0, 198, 255, 0.22);"
+                "color: #98a7bb; font-size: 13px; padding: 10px 14px;"
+                "background: rgba(10, 14, 22, 0.9);"
+                "border: 1px solid rgba(88, 102, 126, 0.42);"
                 "border-radius: 8px;"
             )
             self.btn_launch.setEnabled(False)

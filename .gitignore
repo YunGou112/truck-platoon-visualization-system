@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.pyo
+
+.idea/
+.vscode/
+.claude/
+
+truck_platoon_viz/debug.log
+truck_platoon_viz/exports/
+
+.DS_Store
+Thumbs.db

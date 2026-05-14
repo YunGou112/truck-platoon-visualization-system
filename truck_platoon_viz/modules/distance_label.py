@@ -16,7 +16,7 @@ class DistanceLabelSystem:
         # 初始化字体
         try:
             self.font = pygame.font.SysFont("Microsoft YaHei", 11)
-        except:
+        except Exception:
             self.font = pygame.font.Font(None, 11)
     
     def process_distance_labels(self, screen, trucks, existing_rects, screen_width, screen_height):

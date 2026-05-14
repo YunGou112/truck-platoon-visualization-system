@@ -26,7 +26,7 @@ class Truck:
             if '_ts' not in point:
                 try:
                     point['_ts'] = pd.to_datetime(point['timestamp_str'])
-                except Exception:
+                except (KeyError, TypeError, ValueError):
                     point['_ts'] = pd.Timestamp.min
 
     def update(self, current_time):
@@ -64,7 +64,7 @@ class Truck:
                 m = self.current_pos_data.get('mileage')
                 try:
                     self._start_mileage = float(m) if m is not None else None
-                except Exception:
+                except (TypeError, ValueError):
                     self._start_mileage = None
         else:
             self.current_pos_data = None
@@ -140,10 +140,9 @@ class Truck:
         cur = self.current_pos_data.get('_ts')
         if cur is None or self._start_ts is None:
             return None
-        try:
+        if hasattr(cur, "__sub__"):
             return max(0.0, float((cur - self._start_ts).total_seconds()))
-        except Exception:
-            return None
+        return None
 
     def get_driving_distance(self):
         """从片段起点到当前帧的行驶距离（与 mileage 同单位）。若无 mileage 则返回 None。"""
@@ -154,7 +153,7 @@ class Truck:
         m = self.current_pos_data.get('mileage')
         try:
             cur = float(m) if m is not None else None
-        except Exception:
+        except (TypeError, ValueError):
             cur = None
         if cur is None:
             return None

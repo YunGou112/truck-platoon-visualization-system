@@ -18,7 +18,7 @@ class LabelRenderer:
         try:
             self.font = pygame.font.SysFont("Microsoft YaHei", 12)
             self.bold_font = pygame.font.SysFont("Microsoft YaHei", 12, bold=True)
-        except:
+        except Exception:
             self.font = pygame.font.Font(None, 12)
             self.bold_font = pygame.font.Font(None, 12)
     

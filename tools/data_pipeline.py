@@ -1,29 +1,32 @@
 """
 Unified data pipeline entrypoint.
 
-This script consolidates previous standalone scripts:
-- preprocess_split.py
-- platoon_analyzer.py
-- calculate_platoon_metrics.py
+This script consolidates the engineering data-processing stages.
 """
 
 import argparse
 import sys
+from pathlib import Path
+
+
+TOOLS_DIR = Path(__file__).resolve().parent
+if str(TOOLS_DIR) not in sys.path:
+    sys.path.insert(0, str(TOOLS_DIR))
 
 
 def run_split():
-    from preprocess_split import split_data_by_vehicle
+    from data.preprocess_split import split_data_by_vehicle
     split_data_by_vehicle()
 
 
 def run_analyze():
-    from platoon_analyzer import DataProcessor
+    from data.platoon_analyzer import DataProcessor
     processor = DataProcessor()
     processor.run()
 
 
 def run_metrics():
-    from calculate_platoon_metrics import PlatoonAnalyzer
+    from data.calculate_platoon_metrics import PlatoonAnalyzer
     analyzer = PlatoonAnalyzer()
     analyzer.process_all_files("platoon_results")
 
